@@ -7,7 +7,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load(join('images', 'player', 'down', '0.png')).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
-        self.hitbox_rect = self.rect.inflate(-55, 0) #to remove blank space 
+        self.hitbox_rect = self.rect.inflate(-60, -90) #to remove blank space 
 
         # Movement
         self.direction = pygame.Vector2(0, 0)
