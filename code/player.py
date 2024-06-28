@@ -1,8 +1,9 @@
 from settings import * 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, collision_sprites):
+    def __init__(self, game, pos, groups, collision_sprites):
         super().__init__(groups)
+        self.game = game
         self.load_images()
         self.state, self.frame_index = 'right', 0
         self.image = pygame.image.load(join('images', 'player', 'down', '0.png')).convert_alpha()

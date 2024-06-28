@@ -18,7 +18,7 @@ class Gun(pygame.sprite.Sprite):
     def __init__(self, player, groups):
         # player connection 
         self.player = player 
-        self.distance = 140
+        self.distance = 100
         self.player_direction = pygame.Vector2(0,1)
 
         # sprite setup 
@@ -63,9 +63,10 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, pos, frames, groups, player, collision_sprites):
+    def __init__(self, game, pos, frames, groups, player, collision_sprites):
         super().__init__(groups)
         self.player = player
+        self.game = game
 
         # image 
         self.frames, self.frame_index = frames, 0 
@@ -82,18 +83,16 @@ class Enemy(pygame.sprite.Sprite):
         # timer 
         self.death_time = 0
         self.death_duration = 400
-    
-    def animate(self, dt):
-        self.frame_index += self.animation_speed * dt
-        self.image = self.frames[int(self.frame_index) % len(self.frames)]
+
 
     def move(self, dt):
-        # get direction 
         player_pos = pygame.Vector2(self.player.rect.center)
         enemy_pos = pygame.Vector2(self.rect.center)
-        self.direction = (player_pos - enemy_pos).normalize()
+        if player_pos == enemy_pos:
+            self.direction = pygame.Vector2()
+        else:
+            self.direction = (player_pos - enemy_pos).normalize()
 
-        # update the rect position + collision
         self.hitbox_rect.x += self.direction.x * self.speed * dt
         self.collision('horizontal')
         self.hitbox_rect.y += self.direction.y * self.speed * dt
@@ -107,19 +106,23 @@ class Enemy(pygame.sprite.Sprite):
                     if self.direction.x > 0: self.hitbox_rect.right = sprite.rect.left
                     if self.direction.x < 0: self.hitbox_rect.left = sprite.rect.right
                 else:
-                    if self.direction.y < 0: self.hitbox_rect.top = sprite.rect.bottom
                     if self.direction.y > 0: self.hitbox_rect.bottom = sprite.rect.top
+                    if self.direction.y < 0: self.hitbox_rect.top = sprite.rect.bottom
 
     def destroy(self):
-        # start a timer 
         self.death_time = pygame.time.get_ticks()
-        # change the image 
         surf = pygame.mask.from_surface(self.frames[0]).to_surface()
         surf.set_colorkey('black')
         self.image = surf
-    
+          # Increment the kill counter
+
+    def animate(self, dt):
+        self.frame_index += self.animation_speed * dt
+        self.image = self.frames[int(self.frame_index) % len(self.frames)]
+
     def death_timer(self):
         if pygame.time.get_ticks() - self.death_time >= self.death_duration:
+            self.game.update_kill_count()
             self.kill()
 
     def update(self, dt):
